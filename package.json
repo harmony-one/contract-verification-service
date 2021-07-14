@@ -1,7 +1,7 @@
 {
-  "name": "appengine-staking-dashboard",
+  "name": "contract-verification-service",
   "version": "0.0.1",
-  "description": "Node.js appengine for staking dashboard",
+  "description": "https://github.com/harmony-one/contract-verification-service",
   "private": true,
   "main": "src/server.ts",
   "scripts": {

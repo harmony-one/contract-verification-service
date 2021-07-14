@@ -1,5 +1,5 @@
-# ethhmy-bridge.appengine
-Harmony Eth Bridge appengine
+# contract-verification-service
+Verify & Publish Contract Source Code
 
 ## Install instructions
 
@@ -12,7 +12,7 @@ Harmony Eth Bridge appengine
 * Fetch repo 
 
 ```
-git clone git@github.com:harmony-one/ethhmy-bridge.appengine.git
+https://github.com/harmony-one/contract-verification-service
 ```
 
 * Install dependencies
@@ -38,26 +38,4 @@ npm run build
 
 ```
 npm run start:prod
-```
-
-* How to get all operations list 
-
-```
-curl --location --request GET 'http://localhost:8080/busd/operations'
-```
-
-# Docker
-
-## build ethhmy-be docker image
-```
-./build.sh
-```
-
-## push to docker hub
-You need to have permission to push to the harmonyone repo.
-
-```bash
-sudo docker login
-sudo docker tag ethhmy-be harmonyone/ethhmy-be:latest
-sudo docker push harmonyone/ethhmy-be
 ```
