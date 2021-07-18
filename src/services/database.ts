@@ -4,6 +4,7 @@ const DATABASE_URL = process.env.DATABASE_URL;
 
 export class DBService {
   public db: admin.firestore.Firestore;
+  private smartContracts;
 
   constructor() {
     // Init admin
@@ -17,6 +18,8 @@ export class DBService {
 
       this.db = admin.firestore();
       this.db.settings({ ignoreUndefinedProperties: true });
+
+      this.smartContracts = this.db.collection('smartContracts');
     } catch (e) {
       console.error(e);
     }
@@ -62,6 +65,30 @@ export class DBService {
       return [];
     }
   };
+
+  public async getContractCode(contractAddress): Promise<any> {
+    console.log(contractAddress);
+    const data = await this.smartContracts.doc(contractAddress).get();
+    return data.data();
+  }
+
+  public async addContractCode({
+    contractAddress,
+    sourceCode,
+    compiler,
+    contractName,
+    libraries,
+    abi,
+  }): Promise<void> {
+    await this.smartContracts.doc(contractAddress).set({
+      contractAddress,
+      sourceCode,
+      compiler,
+      contractName,
+      libraries,
+      abi,
+    });
+  }
 }
 
 export const databaseService = new DBService();

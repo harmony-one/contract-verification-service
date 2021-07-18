@@ -1,54 +1,55 @@
 import { asyncHandler } from './helpers';
 import { IServices } from '../services/init';
+import codeVerication from '../services/codeverification';
 
 export const routes = (app, services: IServices) => {
   app.get(
-    '/registrations',
+    '/status',
     asyncHandler(async (req, res) => {
-      const page = parseInt(req.query.page, 10) || 0;
-      const size = parseInt(req.query.size, 10) || 50;
+      return res.json('online');
+    })
+  );
 
-      const data = await services.subDomainRegistrations.getAllRegistrations({
-        ...req.query,
-        page,
-        size,
+  app.post(
+    '/codeVerification',
+    asyncHandler(async (req, res) => {
+      const {
+        contractAddress,
+        compiler,
+        optimizer,
+        optimizerTimes,
+        sourceCode,
+        libraries,
+        constructorArguments,
+        contractName,
+        chainType,
+      } = req.body;
+      const check = await codeVerication({
+        contractAddress,
+        compiler,
+        optimizer,
+        optimizerTimes,
+        sourceCode,
+        libraries,
+        constructorArguments,
+        contractName,
+        chainType,
       });
 
-      return res.json(data);
+      res.status(200).send(check);
     })
   );
 
   app.get(
-    '/one-registrations',
+    '/fetchContractCode',
     asyncHandler(async (req, res) => {
-      const page = parseInt(req.query.page, 10) || 0;
-      const size = parseInt(req.query.size, 10) || 50;
+      const result = await services.database.getContractCode(req.query.contractAddress);
 
-      const data = await services.registrations.getAllRegistrations({
-        ...req.query,
-        page,
-        size,
-      });
+      if (!result) {
+        res.status(400).send({ message: 'contract not found' });
+      }
 
-      return res.json(data);
-    })
-  );
-
-  app.get(
-    '/stats',
-    asyncHandler(async (req, res) => {
-      const data = await services.subDomainRegistrations.getStats();
-
-      return res.json(data);
-    })
-  );
-
-  app.get(
-    '/one-stats',
-    asyncHandler(async (req, res) => {
-      const data = await services.registrations.getStats();
-
-      return res.json(data);
+      res.status(200).send(result);
     })
   );
 };
