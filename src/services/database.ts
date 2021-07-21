@@ -67,7 +67,6 @@ export class DBService {
   };
 
   public async getContractCode(contractAddress): Promise<any> {
-    console.log(contractAddress);
     const data = await this.smartContracts.doc(contractAddress).get();
     return data.data();
   }
@@ -77,6 +76,7 @@ export class DBService {
     sourceCode,
     compiler,
     contractName,
+    constructorArguments,
     libraries,
     abi,
   }): Promise<void> {
@@ -86,6 +86,7 @@ export class DBService {
       compiler,
       contractName,
       libraries,
+      constructorArguments,
       abi,
     });
   }

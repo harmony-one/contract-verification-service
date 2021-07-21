@@ -5,10 +5,19 @@ import { getSmartContractCode } from './rpc';
 import { databaseService } from '../database';
 import fs from 'fs';
 import path from 'path';
+import { getAddress, isValidChecksumAddress } from '@harmony-js/crypto';
+import logger from '../../logger';
+const log = logger.module('verification:index');
 
-function cleanUp(contractAddress) {
-  fs.rmdirSync(path.resolve(__dirname, contractAddress), { recursive: true });
-}
+const cleanUp = async contractAddress => {
+  if (await fs.existsSync(path.resolve(__dirname, contractAddress))) {
+    try {
+      await fs.rmdirSync(path.resolve(__dirname, contractAddress), { recursive: true });
+    } catch (e) {
+      log.error('cleanUp error', { error: e });
+    }
+  }
+};
 
 type inputs = {
   contractAddress: string;
@@ -28,15 +37,29 @@ const codeVerification = async ({
   optimizerTimes,
   sourceCode,
   libraries,
-  contractAddress,
+  contractAddress: contractAddressParams,
   constructorArguments,
   contractName,
-  chainType,
+  chainType = 'mainnet',
 }: inputs): Promise<boolean> => {
+  if (!compiler || !sourceCode || !contractName) {
+    throw new Error('wrong params');
+  }
+
+  isValidChecksumAddress(contractAddressParams);
+
+  const contractAddress = getAddress(contractAddressParams).checksum.toLowerCase();
+
   try {
-    if (fs.existsSync(path.resolve(__dirname, contractAddress))) {
-      await cleanUp(contractAddress);
+    console.log('fetching actual bytecode from blockchain');
+    const blockchainBytecode = await getSmartContractCode(chainType, contractAddress, compiler);
+
+    if (!blockchainBytecode) {
+      throw new Error('Bytecode not found');
     }
+
+    await cleanUp(contractAddress);
+
     truffleSetup({
       compiler,
       optimizer,
@@ -48,23 +71,24 @@ const codeVerification = async ({
       contractName,
     });
 
-    console.log('fetching actual bytecode from blockchain');
-    const actualBytecode = await getSmartContractCode(chainType, contractAddress);
-
-    if (actualBytecode === '0x') {
+    if (blockchainBytecode === '0x') {
       throw 'Invalid Contract Address';
     }
 
-    const { deployedBytecode, bytecode } = getCompiledByteCode({
+    const { bytecode } = getCompiledByteCode({
       contractAddress,
       contractName,
     });
 
     console.log('Comparing the bytecodes : .......');
 
-    const verified = verifyByteCode(actualBytecode, deployedBytecode, compiler);
+    const verified = verifyByteCode(blockchainBytecode, bytecode + constructorArguments, compiler);
 
     console.log('Verified: ', verified);
+
+    if (!verified) {
+      throw new Error('Compiled bytecode do not match with bytecode from blockchain');
+    }
 
     if (verified) {
       let abi = fs.readFileSync(
@@ -77,11 +101,11 @@ const codeVerification = async ({
       );
       abi = JSON.parse(abi.toString()).abi;
 
-      console.log();
       await databaseService.addContractCode({
         contractAddress,
         sourceCode,
         compiler,
+        constructorArguments,
         contractName,
         libraries,
         abi,
@@ -94,45 +118,24 @@ const codeVerification = async ({
     return verified;
   } catch (e) {
     await cleanUp(contractAddress);
-    return e;
+
+    log.error('Error', {
+      error: e,
+      params: {
+        compiler,
+        optimizer,
+        optimizerTimes,
+        sourceCode,
+        libraries,
+        contractAddress,
+        constructorArguments,
+        contractName,
+        chainType,
+      },
+    });
+
+    throw e;
   }
 };
 
 export default codeVerification;
-
-// codeVerification({
-//   contractAddress: "one12emqk8jvygsag8np9m78yrxk38rw3802dwga5c",
-//   sourceCode: `pragma solidity >=0.4.22 <0.7.0;
-
-//   /**
-//    * @title Storage
-//    * @dev Store & retreive value in a variable
-//    */
-//   contract Storage {
-
-//       uint256 number;
-
-//       /**
-//        * @dev Store value in variable
-//        * @param num value to store
-//        */
-//       function store(uint256 num) public {
-//           number = num;
-//       }
-
-//       /**
-//        * @dev Return value
-//        * @return value of 'number'
-//        */
-//       function retreive() public view returns (uint256){
-//           return number;
-//       }
-//   }`,
-//   compiler: "0.6.6",
-//   optimizer: "No",
-//   optimizerTimes: "0",
-//   libraries: [],
-//   constructorArguments: "",
-//   contractName: "Storage",
-//   chainType: "testnet",
-// });

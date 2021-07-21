@@ -1,29 +1,31 @@
-// @ts-nocheck
-import { Harmony } from '@harmony-js/core';
-import { ChainID, ChainType } from '@harmony-js/utils';
-import { toBech32 } from '@harmony-js/crypto';
+import axios from 'axios';
+import logger from '../../logger';
+const log = logger.module('verification:rpc');
 
-const rpcUrl = {
-  testnet: 'https://api.s0.b.hmny.io/',
-  mainnet: 'https://api.s0.t.hmny.io/',
-};
+export const getSmartContractCode = async (chain, address, compiler): Promise<any> => {
+  const explorerUrl =
+    chain === 'mainnet' ? process.env.EXPLORER_API_MAINNET : process.env.EXPLORER_API_TESTNET;
 
-const testnet = new Harmony(rpcUrl.testnet, {
-  chainType: ChainType.Harmony,
-  chainId: ChainID.HmyTestnet,
-});
+  let bytecode, solidityVersion;
 
-const mainnet = new Harmony(rpcUrl.mainnet, {
-  chainType: ChainType.Harmony,
-  chainId: ChainID.HmyMainnet,
-});
+  try {
+    const contract: any = await axios.get(`${explorerUrl}/shard/0/address/${address}/contract`);
 
-export const getSmartContractCode = async (chain, address): Promise<any> => {
-  const hmy = chain === 'mainnet' ? mainnet : testnet;
-  // const finalAddress = address.startsWith("0x") ? toBech32(address) : address;
-  const response = await hmy.blockchain.getCode({
-    address,
-    blockNumber: 'latest',
-  });
-  return response.result;
+    solidityVersion = contract.data.solidityVersion;
+
+    const tx: any = await axios.get(
+      `${explorerUrl}/shard/0/transaction/hash/${contract.data.transactionHash}`
+    );
+
+    bytecode = tx.data.input;
+  } catch (e) {
+    log.error('Error to fetch contract bytecode', { error: e });
+    throw new Error('Contract not found');
+  }
+
+  if (solidityVersion !== compiler) {
+    throw new Error('Compiler versions do not match');
+  }
+
+  return bytecode;
 };

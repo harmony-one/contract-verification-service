@@ -1,6 +1,7 @@
 import { asyncHandler } from './helpers';
 import { IServices } from '../services/init';
 import codeVerication from '../services/codeverification';
+import { getAddress } from '@harmony-js/crypto';
 
 export const routes = (app, services: IServices) => {
   app.get(
@@ -24,7 +25,8 @@ export const routes = (app, services: IServices) => {
         contractName,
         chainType,
       } = req.body;
-      const check = await codeVerication({
+
+      const verified = await codeVerication({
         contractAddress,
         compiler,
         optimizer,
@@ -36,14 +38,16 @@ export const routes = (app, services: IServices) => {
         chainType,
       });
 
-      res.status(200).send(check);
+      res.status(200).send({ success: verified });
     })
   );
 
   app.get(
     '/fetchContractCode',
     asyncHandler(async (req, res) => {
-      const result = await services.database.getContractCode(req.query.contractAddress);
+      const contractAddress = getAddress(req.query.contractAddress).checksum.toLowerCase();
+
+      const result = await services.database.getContractCode(contractAddress);
 
       if (!result) {
         res.status(400).send({ message: 'contract not found' });
