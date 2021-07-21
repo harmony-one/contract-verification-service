@@ -10,4 +10,7 @@ RUN mkdir -p /app/keys
 COPY . /app/
 RUN yarn && yarn build
 
+RUN npm config set user 0
+RUN npm config set unsafe-perm true
+
 CMD node ./dist/server.js
