@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 
 import { execSync } from 'child_process';
+import logger from '../../logger';
+const log = logger.module('verification:core');
 
 type Value = {
   compiler: string;
@@ -94,7 +96,9 @@ export const compile = (directory: string) => {
   try {
     execSync(`cd ${path.resolve(__dirname, directory)} && truffle compile`);
   } catch (e) {
-    throw 'compilation issue';
+    log.error('Compilation issue', { error: e });
+
+    throw 'compilation issue: ' + (e ? e.message : '');
   }
 };
 
