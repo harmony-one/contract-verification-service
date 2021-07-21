@@ -13,4 +13,6 @@ RUN yarn && yarn build
 RUN npm config set user 0
 RUN npm config set unsafe-perm true
 
+RUN npm install -g truffle
+
 CMD node ./dist/server.js
