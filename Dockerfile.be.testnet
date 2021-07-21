@@ -5,7 +5,7 @@ WORKDIR /app
 
 ENV NODE_ENV testnet
 
-RUN mkdir -p /root/.aws /app/keys /app/encrypted
+RUN mkdir -p /app/keys
 
 COPY . /app/
 RUN yarn && yarn build
