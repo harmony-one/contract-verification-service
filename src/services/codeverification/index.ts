@@ -42,8 +42,16 @@ const codeVerification = async ({
   contractName,
   chainType = 'mainnet',
 }: inputs): Promise<boolean> => {
-  if (!compiler || !sourceCode || !contractName) {
-    throw new Error('wrong params');
+  if (!compiler) {
+    throw new Error('Wrong Compiler');
+  }
+
+  if (!sourceCode) {
+    throw new Error('Wrong Source code');
+  }
+
+  if (!contractName) {
+    throw new Error('Wrong Contract name');
   }
 
   isValidChecksumAddress(contractAddressParams);
@@ -82,7 +90,11 @@ const codeVerification = async ({
 
     console.log('Comparing the bytecodes : .......');
 
-    const verified = verifyByteCode(blockchainBytecode, bytecode + constructorArguments, compiler);
+    const verified = verifyByteCode(
+      blockchainBytecode.replace(constructorArguments, ''),
+      bytecode,
+      compiler
+    );
 
     console.log('Verified: ', verified);
 

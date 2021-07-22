@@ -24,7 +24,7 @@ export const getSmartContractCode = async (chain, address, compiler): Promise<an
   }
 
   if (solidityVersion !== compiler) {
-    throw new Error('Compiler versions do not match');
+    // throw new Error('Compiler versions do not match');
   }
 
   return bytecode;
