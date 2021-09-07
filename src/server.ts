@@ -7,6 +7,8 @@ import { routes } from './routes';
 import { InitServices } from './services/init';
 import bodyParser from 'body-parser';
 
+// comment for update - 1
+
 const startServer = async () => {
   const app = express();
 
