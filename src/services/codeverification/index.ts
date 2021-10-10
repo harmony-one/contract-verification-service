@@ -60,9 +60,9 @@ const codeVerification = async ({
 
   try {
     console.log('fetching actual bytecode from blockchain');
-    const blockchainBytecode = await getSmartContractCode(chainType, contractAddress, compiler);
+    const chainData = await getSmartContractCode(chainType, contractAddress, compiler);
 
-    if (!blockchainBytecode) {
+    if (!chainData.bytecode) {
       throw new Error('Bytecode not found');
     }
 
@@ -79,22 +79,18 @@ const codeVerification = async ({
       contractName,
     });
 
-    if (blockchainBytecode === '0x') {
+    if (chainData.bytecode === '0x') {
       throw 'Invalid Contract Address';
     }
 
-    const { bytecode } = getCompiledByteCode({
+    const compiledData = getCompiledByteCode({
       contractAddress,
       contractName,
     });
 
     console.log('Comparing the bytecodes : .......');
 
-    const verified = verifyByteCode(
-      blockchainBytecode.replace(constructorArguments, ''),
-      bytecode,
-      compiler
-    );
+    const verified = verifyByteCode(chainData, compiledData, constructorArguments, compiler);
 
     console.log('Verified: ', verified);
 
