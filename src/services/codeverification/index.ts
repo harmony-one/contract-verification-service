@@ -10,13 +10,13 @@ import logger from '../../logger';
 const log = logger.module('verification:index');
 
 const cleanUp = async contractAddress => {
-  if (await fs.existsSync(path.resolve(__dirname, contractAddress))) {
-    try {
-      await fs.rmdirSync(path.resolve(__dirname, contractAddress), { recursive: true });
-    } catch (e) {
-      log.error('cleanUp error', { error: e });
-    }
-  }
+  // if (await fs.existsSync(path.resolve(__dirname, contractAddress))) {
+  //   try {
+  //     await fs.rmdirSync(path.resolve(__dirname, contractAddress), { recursive: true });
+  //   } catch (e) {
+  //     log.error('cleanUp error', { error: e });
+  //   }
+  // }
 };
 
 type inputs = {
@@ -109,15 +109,15 @@ const codeVerification = async ({
       );
       abi = JSON.parse(abi.toString()).abi;
 
-      await databaseService.addContractCode({
-        contractAddress,
-        sourceCode,
-        compiler,
-        constructorArguments,
-        contractName,
-        libraries,
-        abi,
-      });
+      // await databaseService.addContractCode({
+      //   contractAddress,
+      //   sourceCode,
+      //   compiler,
+      //   constructorArguments,
+      //   contractName,
+      //   libraries,
+      //   abi,
+      // });
     }
 
     console.log('deleting all the files');

@@ -87,11 +87,31 @@ export function splitByteCodeLegacy(providedByteCode, solidityVersion) {
 
 export function trimMetadata(bytecode: string): string {
   // Last 4 chars of bytecode specify byte size of metadata component,
-  // console.log('pfff: ', bytecode.slice(-4), parseInt(bytecode.slice(-4)));
+  // console.log('pfff: ', bytecode.slice(-4), parseInt(bytecode.slice(-4), 16) * 2 + 4);
 
   const metadataSize = parseInt(bytecode.slice(-4), 16) * 2 + 4;
 
   // console.log('metadataSize: ', metadataSize);
 
-  return bytecode.slice(0, bytecode.length - metadataSize);
+  bytecode = bytecode.slice(0, bytecode.length - metadataSize);
+
+  // find bytecode https://ethereum.stackexchange.com/questions/110991/how-to-verify-smart-contracts-on-different-solidity-versions/111001#111001
+  // legacy 0.4.24 or prior (0xa1 0x65 <> 0x00 0x29)
+  const legacyMeta = bytecode.indexOf("a165");
+  if (legacyMeta > 0) {
+    const last = bytecode.indexOf("0029", legacyMeta);
+    if (last > 0) {
+      bytecode = bytecode.replace(bytecode.substring(legacyMeta, last + 4), "");
+    }
+  }
+  // current after 0.4.24 (0xa2 0x64 <> 0x00 0x33)
+  const currentMeta = bytecode.indexOf("a264");
+  if (currentMeta > 0) {
+    const last = bytecode.indexOf("0033", currentMeta);
+    if (last > 0) {
+      bytecode = bytecode.replace(bytecode.substring(currentMeta, last + 4), "");
+    }
+  }
+
+  return bytecode;
 }
