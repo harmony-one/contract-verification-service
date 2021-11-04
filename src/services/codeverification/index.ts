@@ -1,20 +1,22 @@
-import truffleSetup from './truffle';
-import { verifyByteCode } from './verify';
-import { getCompiledByteCode } from './bytecode';
-import { getSmartContractCode } from './rpc';
-import { databaseService } from '../database';
-import fs from 'fs';
-import path from 'path';
-import { getAddress, isValidChecksumAddress } from '@harmony-js/crypto';
-import logger from '../../logger';
-const log = logger.module('verification:index');
+import truffleSetup from "./truffle";
+import { verifyByteCode } from "./verify";
+import { getCompiledByteCode } from "./bytecode";
+import { getSmartContractCode } from "./rpc";
+import { databaseService } from "../database";
+import fs from "fs";
+import path from "path";
+import { getAddress, isValidChecksumAddress } from "@harmony-js/crypto";
+import logger from "../../logger";
+const log = logger.module("verification:index");
 
-const cleanUp = async contractAddress => {
+const cleanUp = async (contractAddress) => {
   // if (await fs.existsSync(path.resolve(__dirname, contractAddress))) {
   //   try {
-  //     await fs.rmdirSync(path.resolve(__dirname, contractAddress), { recursive: true });
+  //     await fs.rmdirSync(path.resolve(__dirname, contractAddress), {
+  //       recursive: true,
+  //     });
   //   } catch (e) {
-  //     log.error('cleanUp error', { error: e });
+  //     log.error("cleanUp error", { error: e });
   //   }
   // }
 };
@@ -29,6 +31,7 @@ type inputs = {
   constructorArguments: string;
   contractName: string;
   chainType: string;
+  language: number;
 };
 
 const codeVerification = async ({
@@ -40,30 +43,37 @@ const codeVerification = async ({
   contractAddress: contractAddressParams,
   constructorArguments,
   contractName,
-  chainType = 'mainnet',
+  chainType = "mainnet",
+  language,
 }: inputs): Promise<boolean> => {
   if (!compiler) {
-    throw new Error('Wrong Compiler');
+    throw new Error("Wrong Compiler");
   }
 
   if (!sourceCode) {
-    throw new Error('Wrong Source code');
+    throw new Error("Wrong Source code");
   }
 
   if (!contractName) {
-    throw new Error('Wrong Contract name');
+    throw new Error("Wrong Contract name");
   }
 
   isValidChecksumAddress(contractAddressParams);
 
-  const contractAddress = getAddress(contractAddressParams).checksum.toLowerCase();
+  const contractAddress = getAddress(
+    contractAddressParams
+  ).checksum.toLowerCase();
 
   try {
-    console.log('fetching actual bytecode from blockchain');
-    const chainData = await getSmartContractCode(chainType, contractAddress, compiler);
+    console.log("fetching actual bytecode from blockchain");
+    const chainData = await getSmartContractCode(
+      chainType,
+      contractAddress,
+      compiler
+    );
 
     if (!chainData.bytecode) {
-      throw new Error('Bytecode not found');
+      throw new Error("Bytecode not found");
     }
 
     await cleanUp(contractAddress);
@@ -77,10 +87,11 @@ const codeVerification = async ({
       constructorArguments,
       contractAddress,
       contractName,
+      language,
     });
 
-    if (chainData.bytecode === '0x') {
-      throw 'Invalid Contract Address';
+    if (chainData.bytecode === "0x") {
+      throw "Invalid Contract Address";
     }
 
     const compiledData = getCompiledByteCode({
@@ -88,22 +99,29 @@ const codeVerification = async ({
       contractName,
     });
 
-    console.log('Comparing the bytecodes : .......');
+    console.log("Comparing the bytecodes : .......");
 
-    const verified = verifyByteCode(chainData, compiledData, constructorArguments, compiler);
+    const verified = verifyByteCode(
+      chainData,
+      compiledData,
+      constructorArguments,
+      compiler
+    );
 
-    console.log('Verified: ', verified);
+    console.log("Verified: ", verified);
 
     if (!verified) {
-      throw new Error('Compiled bytecode do not match with bytecode from blockchain');
+      throw new Error(
+        "Compiled bytecode do not match with bytecode from blockchain"
+      );
     }
 
     if (verified) {
       let abi = fs.readFileSync(
         path.join(
           path.resolve(__dirname, contractAddress),
-          'build',
-          'contracts',
+          "build",
+          "contracts",
           `${contractName}.json`
         )
       );
@@ -120,14 +138,14 @@ const codeVerification = async ({
       // });
     }
 
-    console.log('deleting all the files');
+    console.log("deleting all the files");
     await cleanUp(contractAddress);
 
     return verified;
   } catch (e) {
     await cleanUp(contractAddress);
 
-    log.error('Error', {
+    log.error("Error", {
       error: e,
       params: {
         compiler,
