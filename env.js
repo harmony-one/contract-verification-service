@@ -13,6 +13,7 @@ if (!process.env.NODE_ENV) {
 }
 
 var dotenvFiles = [
+  `${resolveApp('.env')}`,
   `${resolveApp('.env.common')}`,
   `${resolveApp('.env')}.${NODE_ENV}`,
   resolveApp('./keys/.env.private'),
