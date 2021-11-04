@@ -105,7 +105,8 @@ const codeVerification = async ({
       chainData,
       compiledData,
       constructorArguments,
-      compiler
+      compiler,
+      language
     );
 
     console.log("Verified: ", verified);

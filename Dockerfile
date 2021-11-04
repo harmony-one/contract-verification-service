@@ -22,6 +22,6 @@ RUN npm config set unsafe-perm true
 
 RUN npm install -g truffle
 
-RUN pip3 install "vyper>=0.2"
+RUN pip3 install "vyper==0.2.16"
 
 ENTRYPOINT [ "node", "./dist/server.js" ]
