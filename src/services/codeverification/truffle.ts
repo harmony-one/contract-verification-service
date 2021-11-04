@@ -9,13 +9,20 @@ type Value = {
   compiler: string;
   optimizer: string;
   optimizerTimes: string;
+  language: number;
 };
 
 const truffleConfig = ({
   compiler,
   optimizer = "No",
   optimizerTimes = "0",
+  language = 0
 }: Value): string => {
+  if (language) {
+    return `
+    module.exports = {
+    }`
+  }
   if (["Yes", "yes", true].includes(optimizer)) {
     return `
     module.exports = {
@@ -52,6 +59,7 @@ const createConnfiguration = ({
   constructorArguments,
   compiler,
   contractAddress,
+  language
 }): void => {
   if (!compiler) {
     throw new Error("No Solidity version specified");
@@ -61,7 +69,7 @@ const createConnfiguration = ({
   execSync(`npx truffle init ${path.resolve(__dirname, contractAddress)}`);
 
   console.log("Creating truffle configuration");
-  const config = truffleConfig({ compiler, optimizer, optimizerTimes });
+  const config = truffleConfig({ compiler, optimizer, optimizerTimes, language });
   fs.writeFileSync(
     path.join(path.resolve(__dirname, contractAddress), "truffle-config.js"),
     config
@@ -109,7 +117,7 @@ const createVyFileFromSource = ({
       path.join(
         path.resolve(__dirname, contractAddress),
         "contracts",
-        `${contractName}.vy.py`
+        `${contractName}.vy`
       ),
       sourceCode
     );
@@ -118,10 +126,11 @@ const createVyFileFromSource = ({
       path.join(
         path.resolve(__dirname, contractAddress),
         "contracts",
-        "Migration.sol"
+        "Migrations.sol"
       )
     );
   } catch (e) {
+    console.log("Error!", e);
     throw "Couldn't create vy file";
   }
 };
@@ -146,6 +155,7 @@ export const installDependencies = ({ libraries, contractAddress }) => {
 export const compile = (directory: string) => {
   try {
     execSync(`cd ${path.resolve(__dirname, directory)} && truffle compile`);
+    console.log("Success - compiled!");
   } catch (e) {
     log.error("Compilation issue", { error: e });
 
@@ -183,6 +193,7 @@ export default async ({
     constructorArguments,
     compiler,
     contractAddress,
+    language
   });
 
   console.log("Installing dependencies...");
