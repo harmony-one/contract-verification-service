@@ -33,6 +33,7 @@ export const routes = (app, services: IServices) => {
         optimizer,
         optimizerTimes,
         sourceCode,
+        files: req.files,
         libraries,
         constructorArguments,
         contractName,

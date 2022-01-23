@@ -5,6 +5,7 @@ const DATABASE_URL = process.env.DATABASE_URL;
 export class DBService {
   public db: admin.firestore.Firestore;
   private smartContracts;
+  private smartContractFiles;
 
   constructor() {
     // Init admin
@@ -34,6 +35,7 @@ export class DBService {
       this.db.settings({ ignoreUndefinedProperties: true });
 
       this.smartContracts = this.db.collection('smartContracts');
+      this.smartContractFiles = this.db.collection('smartContractFiles');
     } catch (e) {
       console.error(e);
     }

@@ -32,6 +32,7 @@ type inputs = {
   contractName: string;
   chainType: string;
   language: number;
+  files: object;
 };
 
 const codeVerification = async ({
@@ -39,6 +40,7 @@ const codeVerification = async ({
   optimizer,
   optimizerTimes,
   sourceCode,
+  files,
   libraries,
   contractAddress: contractAddressParams,
   constructorArguments,
@@ -83,6 +85,7 @@ const codeVerification = async ({
       optimizer,
       optimizerTimes,
       sourceCode,
+      files,
       libraries,
       constructorArguments,
       contractAddress,

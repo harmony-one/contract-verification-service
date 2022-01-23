@@ -3,6 +3,7 @@ import path from "path";
 
 import { execSync } from "child_process";
 import logger from "../../logger";
+import replace from "replace-in-file";
 const log = logger.module("verification:core");
 
 type Value = {
@@ -31,9 +32,8 @@ const truffleConfig = ({
           version: "${compiler}",
           settings: {
             optimizer:{
-              enabled: ${
-                ["Yes", "yes", true].includes(optimizer) ? true : false
-              },
+              enabled: ${["Yes", "yes", true].includes(optimizer) ? true : false
+            },
               runs: ${optimizerTimes}
             }
           }
@@ -172,7 +172,8 @@ type inputs = {
   constructorArguments: string;
   contractAddress: string;
   contractName: string;
-  language: number; // 0: solidity 1: viper
+  language: number; // 0: solidity 1: viper,
+  files: object; // files as per express-fileupload (https://github.com/richardgirges/express-fileupload)
 };
 
 export default async ({
@@ -180,11 +181,12 @@ export default async ({
   optimizer,
   optimizerTimes,
   sourceCode,
+  files,
   libraries,
   constructorArguments,
   contractAddress,
   contractName,
-  language = 0,
+  language = 0
 }: inputs) => {
   createConnfiguration({
     optimizer,
@@ -200,7 +202,25 @@ export default async ({
   installDependencies({ libraries, contractAddress });
 
   console.log("Generating contract file");
-  if (!language) {
+  if (files) { // files object exists
+    Object.keys(files).forEach(e => {
+      files[e].mv("./" + contractAddress + "/contracts/" + files[e].name);
+    });
+
+    /// if libraries are provided, maybe they included openzepelin, in that case we don't include
+    /// any imports with @ in the name
+    const options = {
+      files: [
+        './' + contractAddress + '/contracts/*.sol'
+      ],
+      from: libraries && libraries?.length > 0 ? /import \"[.|\/|\w]+\//g : /import \"[@|.|\/|\w]+\//g,
+      to: 'import "./'
+    }
+
+    console.log("File updated with regex", options, replace.sync(options));
+
+  }
+  else if (!language) {
     createSolFileFromSource({
       sourceCode,
       contractAddress,
