@@ -52,7 +52,7 @@ const codeVerification = async ({
     throw new Error("Wrong Compiler");
   }
 
-  if (!sourceCode) {
+  if (!sourceCode && !files) {
     throw new Error("Wrong Source code");
   }
 
@@ -80,7 +80,7 @@ const codeVerification = async ({
 
     await cleanUp(contractAddress);
 
-    truffleSetup({
+    const filesObj = await truffleSetup({
       compiler,
       optimizer,
       optimizerTimes,
@@ -140,6 +140,14 @@ const codeVerification = async ({
         libraries,
         abi,
       });
+
+      if (filesObj) {
+        // this should now have a list of file object with source
+        await databaseService.addContractSupportingFiles({
+          contractAddress,
+          sources: filesObj
+        });
+      }
     }
 
     console.log("deleting all the files");
@@ -148,7 +156,7 @@ const codeVerification = async ({
     return verified;
   } catch (e) {
     await cleanUp(contractAddress);
-
+    console.log(e);
     log.error("Error", {
       error: e,
       params: {

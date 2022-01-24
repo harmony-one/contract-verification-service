@@ -15,18 +15,17 @@ const startServer = async () => {
 
   app.use(cors());
 
-  app.use(fileUpload({
-    useTempFiles: true,
-    tempFileDir: '/tmp/',
-    limits: { fileSize: +process.env.MAX_FILE_UPLOAD_LIMIT || 100 * 1024}
-  }));
-
   app.get('/', (req, res) => {
     res.send('Hello from App Engine!');
   });
 
   app.use(bodyParser.json({ limit: '1mb' })); // to support JSON-encoded bodies
 
+  app.use(fileUpload({
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+    limits: { fileSize: +process.env.MAX_FILE_UPLOAD_LIMIT || 1024 * 1024 }
+  }));
   // Init services
   const services = await InitServices();
 

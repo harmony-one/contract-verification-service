@@ -53,10 +53,12 @@ export const routes = (app, services: IServices) => {
       ).checksum.toLowerCase();
 
       const result = await services.database.getContractCode(contractAddress);
+      const fileObj = await services.database.getContractSupportingFiles(contractAddress);
 
       if (!result) {
         res.status(400).send({ message: "contract not found" });
       }
+      result.supporting = fileObj;
 
       res.status(200).send(result);
     })
