@@ -33,7 +33,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@harmony-js/core": "^0.1.55",
+    "@harmony-js/core": "^0.1.57",
     "@openzeppelin/contracts": "^3.2.0",
     "@sentry/node": "^5.25.0",
     "autobind-decorator": "^2.4.0",
