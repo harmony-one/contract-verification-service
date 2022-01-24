@@ -8,7 +8,7 @@
     "start": "node ./dist/server.js",
     "start:watch": "tsc -w & nodemon -q -w ./dist ./dist/server.js",
     "start:prod": "node ./dist/server.js",
-    "build": "rm -rf ./dist && tsc",
+    "build": "git submodule update --remote --recursive && rm -rf ./dist && tsc",
     "test": "jest --forceExit",
     "path": "tspath",
     "prepublishOnly": "npm version patch"
