@@ -16,7 +16,7 @@ const startServer = async () => {
   app.use(cors());
 
   app.get('/', (req, res) => {
-    res.send('Hello from App Engine!');
+    res.send('Hello from App Engine! - API Support');
   });
 
   app.use(bodyParser.json({ limit: '1mb' })); // to support JSON-encoded bodies
