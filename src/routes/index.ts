@@ -38,7 +38,7 @@ export const routes = (app, services: IServices) => {
         constructorArguments,
         contractName,
         chainType,
-        language,
+        language: +language,
       });
 
       res.status(200).send({ success: verified });

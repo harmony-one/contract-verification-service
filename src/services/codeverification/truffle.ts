@@ -19,7 +19,9 @@ const truffleConfig = ({
   optimizerTimes = "0",
   language = 0
 }: Value): string => {
+  console.log("Language is", language);
   if (language) {
+    console.log("Language is suppose to be empty but its not??");
     return `
     module.exports = {
     }`
