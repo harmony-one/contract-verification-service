@@ -2,6 +2,7 @@ import { asyncHandler } from "./helpers";
 import { IServices } from "../services/init";
 import codeVerication from "../services/codeverification";
 import { getAddress } from "@harmony-js/crypto";
+import { getProxyAddress } from "../services/utils";
 
 export const routes = (app, services: IServices) => {
   app.get(
@@ -53,12 +54,27 @@ export const routes = (app, services: IServices) => {
       ).checksum.toLowerCase();
 
       const result = await services.database.getContractCode(contractAddress);
-      const fileObj = await services.database.getContractSupportingFiles(contractAddress);
+
+      if (result) {
+        const fileObj = await services.database.getContractSupportingFiles(contractAddress);
+        result.supporting = fileObj;
+        try {
+          const proxy = await getProxyAddress(contractAddress);
+          result.proxyAddress = proxy;
+          if (proxy && proxy !== "") {
+            result.proxy = await services.database.getContractCode(proxy.toLocaleLowerCase());
+          }
+        }
+        catch (e) {
+          // no proxy address
+          console.error("No proxy", e);
+        }
+      }
 
       if (!result) {
         res.status(400).send({ message: "contract not found" });
+        return;
       }
-      result.supporting = fileObj;
 
       res.status(200).send(result);
     })

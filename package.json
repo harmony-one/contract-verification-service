@@ -35,6 +35,7 @@
   "dependencies": {
     "@harmony-js/core": "^0.1.57",
     "@openzeppelin/contracts": "^3.2.0",
+    "@openzeppelin/upgrades-core": "^1.11.1",
     "@sentry/node": "^5.25.0",
     "autobind-decorator": "^2.4.0",
     "axios": "^0.21.1",
@@ -47,6 +48,7 @@
     "dotenv": "^8.2.0",
     "dotenv-expand": "^5.1.0",
     "eth-ens-namehash": "^2.0.8",
+    "ethers": "^5.5.3",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.1",
     "firebase-admin": "^9.2.0",
