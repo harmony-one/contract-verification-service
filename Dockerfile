@@ -20,7 +20,8 @@ RUN yarn && yarn build
 RUN npm config set user 0
 RUN npm config set unsafe-perm true
 
-RUN npm install -g truffle
+# RUN npm install -g truffle
+RUN yarn global add truffle
 
 RUN pip3 install "vyper==0.2.16"
 
