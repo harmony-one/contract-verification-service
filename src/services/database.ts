@@ -6,6 +6,7 @@ export class DBService {
   public db: admin.firestore.Firestore;
   private smartContracts;
   private smartContractFiles;
+  private smartContractVerifications;
 
   constructor() {
     // Init admin
@@ -36,6 +37,7 @@ export class DBService {
 
       this.smartContracts = this.db.collection('smartContracts');
       this.smartContractFiles = this.db.collection('smartContractFiles');
+      this.smartContractVerifications = this.db.collection("smartContractVerifications");
     } catch (e) {
       console.error(e);
     }
@@ -90,6 +92,35 @@ export class DBService {
   public async getContractSupportingFiles(contractAddress): Promise<any> {
     const data = await this.smartContractFiles.doc(contractAddress).get();
     return data.data();
+  }
+
+  public async getContractVerificationStatus(guid): Promise<any> {
+    const data = await this.smartContractVerifications.doc(guid).get();
+    return data.data();
+  }
+
+  public async addContractVerificationStatus({
+    guid,
+    data,
+    result
+  }): Promise<void> {
+    await this.smartContractVerifications.doc(guid).set({
+      guid,
+      data,
+      result
+    })
+  }
+
+  public async updateContractVerificationStatus({
+    guid,
+    data,
+    result
+  }): Promise<void> {
+    await this.smartContractVerifications.doc(guid).set({
+      guid,
+      data,
+      result
+    })
   }
 
   public async addContractCode({

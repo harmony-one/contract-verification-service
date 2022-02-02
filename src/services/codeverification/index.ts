@@ -10,15 +10,15 @@ import logger from "../../logger";
 const log = logger.module("verification:index");
 
 const cleanUp = async (contractAddress) => {
-  // if (await fs.existsSync(path.resolve(__dirname, contractAddress))) {
-  //   try {
-  //     await fs.rmdirSync(path.resolve(__dirname, contractAddress), {
-  //       recursive: true,
-  //     });
-  //   } catch (e) {
-  //     log.error("cleanUp error", { error: e });
-  //   }
-  // }
+  if (await fs.existsSync(path.resolve(__dirname, contractAddress))) {
+    try {
+      await fs.rmdirSync(path.resolve(__dirname, contractAddress), {
+        recursive: true,
+      });
+    } catch (e) {
+      log.error("cleanUp error", { error: e });
+    }
+  }
 };
 
 type inputs = {
