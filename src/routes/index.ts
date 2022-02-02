@@ -91,6 +91,8 @@ export const routes = (app, services: IServices) => {
       const guid = uuidv4();
       let responseSent = false;
 
+      console.log(req.query);
+
       try {
         const body = req.body;
         // mapping from harmony to etherscan
@@ -133,7 +135,7 @@ export const routes = (app, services: IServices) => {
           optimizer: optimizer, //0 = No Optimization, 1 = Optimization used (applicable when codeformat=solidity-single-file)
           optimizerTimes: optimizerTimes,                            //set to 200 as default unless otherwise  (applicable when codeformat=solidity-single-file)        
           constructorArguments: body.constructorArguements,     //if applicable
-          chainType: "mainnet",
+          chainType: req.query?.network || "mainnet",
           settings
         }
 
