@@ -194,9 +194,10 @@ export const routes = (app, services: IServices) => {
         result.supporting = fileObj;
         try {
           const proxy = await getProxyAddress(contractAddress);
-          result.proxyAddress = proxy;
-          if (proxy && proxy !== "") {
-            result.proxy = await services.database.getContractCode(proxy.toLocaleLowerCase());
+          result.proxyAddress = proxy?.implementationAddress;
+          result.proxyDetails = proxy;
+          if (proxy && proxy?.implementationAddress !== "") {
+            result.proxy = await services.database.getContractCode(proxy?.implementationAddress.toLocaleLowerCase());
           }
         }
         catch (e) {
