@@ -3,6 +3,7 @@ import path from "path";
 
 import { execSync } from "child_process";
 import logger from "../../logger";
+import replace from "replace-in-file";
 const log = logger.module("verification:core");
 
 type Value = {
@@ -18,7 +19,9 @@ const truffleConfig = ({
   optimizerTimes = "0",
   language = 0
 }: Value): string => {
+  console.log("Language is", language);
   if (language) {
+    console.log("Language is suppose to be empty but its not??");
     return `
     module.exports = {
     }`
@@ -31,9 +34,8 @@ const truffleConfig = ({
           version: "${compiler}",
           settings: {
             optimizer:{
-              enabled: ${
-                ["Yes", "yes", true].includes(optimizer) ? true : false
-              },
+              enabled: ${["Yes", "yes", true].includes(optimizer) ? true : false
+      },
               runs: ${optimizerTimes}
             }
           }
@@ -136,9 +138,10 @@ const createVyFileFromSource = ({
 };
 
 export const installDependencies = ({ libraries, contractAddress }) => {
-  if (libraries.length > 0) {
+  if (libraries?.length > 0) {
     const dependencies = libraries.toString().replace(/\,/g, " ");
     console.log(dependencies);
+
     try {
       execSync(
         `pwd && cd ${path.resolve(
@@ -172,19 +175,64 @@ type inputs = {
   constructorArguments: string;
   contractAddress: string;
   contractName: string;
-  language: number; // 0: solidity 1: viper
+  language: number; // 0: solidity 1: viper,
+  files: object; // files as per express-fileupload (https://github.com/richardgirges/express-fileupload)
 };
+
+function extractFromSourcesObject(sourceCode) {
+  console.log("Extracting source files from object sources");
+  try {
+    if (typeof (sourceCode) === "string") return null;
+
+    let sources = sourceCode;
+
+    const files = {};
+    Object.keys(sources).forEach(source => {
+      let filename;
+
+      if (source.indexOf("\\") >= 0) {
+        // windows file
+        console.log("Source is windows file");
+        filename = source.substring(source.lastIndexOf("\\") + 1);
+      }
+      else {
+        filename = source.substring(source.lastIndexOf("/") + 1);
+      }
+      files[filename] = {
+        name: filename,
+        source: sources[source].content,
+        mv: (name) => {
+          try {
+            fs.writeFileSync(
+              name,
+              sources[source].content
+            );
+          } catch (e) {
+            throw "Couldn't create sol files because of " + e;
+          }
+        }
+      };
+    })
+    return files;
+  }
+  catch (e) {
+    // ignore
+    console.error("Error during processing of files", e);
+  }
+  return null;
+}
 
 export default async ({
   compiler,
   optimizer,
   optimizerTimes,
   sourceCode,
+  files,
   libraries,
   constructorArguments,
   contractAddress,
   contractName,
-  language = 0,
+  language = 0
 }: inputs) => {
   createConnfiguration({
     optimizer,
@@ -199,8 +247,55 @@ export default async ({
   console.log("Installing dependencies...");
   installDependencies({ libraries, contractAddress });
 
-  console.log("Generating contract file");
-  if (!language) {
+  if (!files) {
+    files = extractFromSourcesObject(sourceCode);
+  }
+
+  if (files) { // files object exists
+    await Promise.all(Object.keys(files).map(async e => {
+      try {
+        await files[e].mv(path.join(
+          path.resolve(__dirname, contractAddress),
+          "contracts",
+          files[e].name,
+        ));
+        files[e].mv = null;
+        if (!files[e].source) {
+          files[files[e].name] = {
+            name: files[e].name,
+            source: fs.readFileSync(
+              path.join(
+                path.resolve(__dirname, contractAddress),
+                "contracts",
+                files[e].name,
+              )
+            ).toString()
+          };
+          if (files[e].name !== e) {
+            delete(files[e]);
+          }
+        }
+      }
+      catch (ex) {
+        console.log(ex);
+      }
+      Promise.resolve(files[e]);
+    }));
+
+    /// if libraries are provided, maybe they included openzepelin, in that case we don't include
+    /// any imports with @ in the name
+    const options = {
+      files: [
+        //'./' + contractAddress + '/contracts/*.sol'
+        path.resolve(__dirname, "./" + contractAddress + '/contracts/*.sol')
+      ],
+      from: libraries && libraries?.length > 0 ? /import \"[.|\/|\w|-]+\//g : /import \"[@|.|\/|\w|-]+\//g,
+      to: 'import "./'
+    }
+
+    replace.sync(options);
+  }
+  else if (!language) {
     createSolFileFromSource({
       sourceCode,
       contractAddress,
@@ -212,4 +307,5 @@ export default async ({
 
   console.log("Compiling.....");
   compile(contractAddress);
+  return files;
 };

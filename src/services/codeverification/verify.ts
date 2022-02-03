@@ -15,7 +15,6 @@ export function verifyByteCode(
     const trimmedDeployedBytecode = language === 0 ? trimMetadata(chainData.bytecode) : chainData.bytecode;
     const trimmedCompiledRuntimeBytecode = language === 0 ? trimMetadata(recompiled.deployedBytecode) : recompiled.deployedBytecode;
 
-
     if (trimmedDeployedBytecode === trimmedCompiledRuntimeBytecode) {
       // partial
       return true;

@@ -6,6 +6,7 @@ import cors from 'cors';
 import { routes } from './routes';
 import { InitServices } from './services/init';
 import bodyParser from 'body-parser';
+import fileUpload from 'express-fileupload';
 
 // comment for update - 1
 
@@ -15,11 +16,17 @@ const startServer = async () => {
   app.use(cors());
 
   app.get('/', (req, res) => {
-    res.send('Hello from App Engine!');
+    res.send('Hello from App Engine! - API Support');
   });
 
-  app.use(bodyParser.json()); // to support JSON-encoded bodies
+  app.use(bodyParser.json({ limit: '1mb' })); // to support JSON-encoded bodies
+  app.use(bodyParser.urlencoded())
 
+  app.use(fileUpload({
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+    limits: { fileSize: +process.env.MAX_FILE_UPLOAD_LIMIT || 1024 * 1024 }
+  }));
   // Init services
   const services = await InitServices();
 

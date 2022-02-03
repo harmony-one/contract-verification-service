@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-fetch('https://morning-river-73727.herokuapp.com/codeVerification', {
+fetch('http://localhost:8080/codeVerification', {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",

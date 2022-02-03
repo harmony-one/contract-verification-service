@@ -5,23 +5,25 @@ const DATABASE_URL = process.env.DATABASE_URL;
 export class DBService {
   public db: admin.firestore.Firestore;
   private smartContracts;
+  private smartContractFiles;
+  private smartContractVerifications;
 
   constructor() {
     // Init admin
     try {
       const serviceAccount = {
-        type:process.env.type,
-        projectId:process.env.project_id,
-        privateKey:process.env.private_key.replace(/\\n/g, '\n'),
-        project_id:process.env.project_id,
-        private_key_id:process.env.private_key_id.replace(/\\n/g, '\n'),
-        private_key:process.env.private_key,
-        client_email:process.env.client_email,
-        client_id:process.env.client_id,
-        auth_uri:process.env.auth_uri,
-        token_uri:process.env.token_uri,
-        auth_provider_x509_cert_url:process.env.auth_provider_x509_cert_url,
-        client_x509_cert_url:process.env.client_x509_cert_url
+        type: process.env.type,
+        projectId: process.env.project_id,
+        privateKey: process.env.private_key.replace(/\\n/g, '\n'),
+        project_id: process.env.project_id,
+        private_key_id: process.env.private_key_id.replace(/\\n/g, '\n'),
+        private_key: process.env.private_key,
+        client_email: process.env.client_email,
+        client_id: process.env.client_id,
+        auth_uri: process.env.auth_uri,
+        token_uri: process.env.token_uri,
+        auth_provider_x509_cert_url: process.env.auth_provider_x509_cert_url,
+        client_x509_cert_url: process.env.client_x509_cert_url
       };
       //require('../../keys/keys.json');
 
@@ -34,6 +36,8 @@ export class DBService {
       this.db.settings({ ignoreUndefinedProperties: true });
 
       this.smartContracts = this.db.collection('smartContracts');
+      this.smartContractFiles = this.db.collection('smartContractFiles');
+      this.smartContractVerifications = this.db.collection("smartContractVerifications");
     } catch (e) {
       console.error(e);
     }
@@ -85,6 +89,40 @@ export class DBService {
     return data.data();
   }
 
+  public async getContractSupportingFiles(contractAddress): Promise<any> {
+    const data = await this.smartContractFiles.doc(contractAddress).get();
+    return data.data();
+  }
+
+  public async getContractVerificationStatus(guid): Promise<any> {
+    const data = await this.smartContractVerifications.doc(guid).get();
+    return data.data();
+  }
+
+  public async addContractVerificationStatus({
+    guid,
+    data,
+    result
+  }): Promise<void> {
+    await this.smartContractVerifications.doc(guid).set({
+      guid,
+      data,
+      result
+    })
+  }
+
+  public async updateContractVerificationStatus({
+    guid,
+    data,
+    result
+  }): Promise<void> {
+    await this.smartContractVerifications.doc(guid).set({
+      guid,
+      data,
+      result
+    })
+  }
+
   public async addContractCode({
     contractAddress,
     sourceCode,
@@ -103,6 +141,15 @@ export class DBService {
       constructorArguments,
       abi,
     });
+  }
+
+  public async addContractSupportingFiles({
+    contractAddress,
+    sources
+  }): Promise<void> {
+    await this.smartContractFiles.doc(contractAddress).set({
+      sources
+    })
   }
 }
 
