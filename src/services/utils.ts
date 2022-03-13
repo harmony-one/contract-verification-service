@@ -22,12 +22,14 @@ export const getProxyAddress = async (address: string): Promise<any | null> => {
   }
 
   if (await isBeaconProxy(provider, address)) {
+    console.log("Is Beacon Address");
     result.isBeacon = true;
     result.beaconAddress = await getBeaconAddress(provider, address);
     result.implementationAddress = await getImplementationAddressFromBeacon(provider, result.beaconAddress);
     return result;
   }
   else if (await isTransparentOrUUPSProxy(provider, address)) {
+    console.log("Is Proxy (Transparent / uups)");
     result.isProxy = true;
     result.implementationAddress = await getImplementationAddress(provider, address);
     return result;
