@@ -9,7 +9,7 @@
     "start:watch": "tsc -w & nodemon -q -w ./dist ./dist/server.js",
     "start:prod": "node ./dist/server.js",
     "build": "rm -rf ./dist && tsc",
-    "test": "jest --forceExit --testTimeout=60000",
+    "test": "jest --forceExit --testTimeout=120000 --detectOpenHandles",
     "path": "tspath",
     "prepublishOnly": "npm version patch"
   },

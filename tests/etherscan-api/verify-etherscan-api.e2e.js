@@ -41,7 +41,7 @@ test('codeVerification etherscan api should pass', () => {
   }
   return fetch('http://localhost:8080/verify?network=testnet', payload).then(async (result) => {
     const json = await result.json();
-    await delay(10000);
+    await delay(15000);
 
     const verified = await fetch('http://localhost:8080/verify?guid=' + json.result)
     const verifiedJson = await verified.json();
@@ -103,7 +103,7 @@ test('codeVerification etherscan multi-file api should pass', () => {
   }
   return fetch('http://localhost:8080/verify?network=testnet', payload).then(async (result) => {
     const json = await result.json();
-    await delay(10000);
+    await delay(15000);
 
     const verified = await fetch('http://localhost:8080/verify?guid=' + json.result)
     const verifiedJson = await verified.json();
@@ -138,7 +138,7 @@ test('codeVerification etherscan api should fail - incorrect bytecode', () => {
   }
   return fetch('http://localhost:8080/verify?network=testnet', payload).then(async (result) => {
     const json = await result.json();
-    await delay(10000);
+    await delay(15000);
 
     const verified = await fetch('http://localhost:8080/verify?guid=' + json.result)
     const verifiedJson = await verified.json();
@@ -173,9 +173,86 @@ test('codeVerification etherscan api should fail - incorrect contract name', () 
   }
   return fetch('http://localhost:8080/verify?network=testnet', payload).then(async (result) => {
     const json = await result.json();
-    await delay(10000);
+    await delay(15000);
 
     const verified = await fetch('http://localhost:8080/verify?guid=' + json.result)
     const verifiedJson = await verified.json();
+    console.log(verifiedJson);
     expect(verifiedJson.status).toEqual(0); // should fail
-  });});
+  });
+});
+
+
+test('codeVerification etherscan api will fail - optimisation off', () => {
+  const body = {
+    "chainType": "testnet",
+    "contractaddress": "0xfBcbC0D214693CF4400841770c856e95cB793F4E",
+    "compilerversion": "0.6.2",
+    "optimizationUsed": "No",
+    "runs": "0",
+    "sourceCode": fs.readFileSync("tests/artifacts/correct.sol").toString(),
+    "contractname": "SimpleToken"
+  };
+  const payload = {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+      "cache-control": "max-age=0",
+      "content-type": "application/json",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "cross-site",
+      "sec-gpc": "1"
+    },
+    "referrerPolicy": "no-referrer",
+    "body": JSON.stringify(body),
+    "method": "POST"
+  }
+  return fetch('http://localhost:8080/verify?network=testnet', payload).then(async (result) => {
+    const json = await result.json();
+    await delay(15000);
+
+    const verified = await fetch('http://localhost:8080/verify?guid=' + json.result)
+    const verifiedJson = await verified.json();
+    // console.log(verifiedJson);
+    expect(verifiedJson.message).toBe("Fail - Unable to verify")
+  });
+});
+
+
+
+test('codeVerification etherscan api will fail - version incorrect', () => {
+  const body = {
+    "chainType": "testnet",
+    "contractaddress": "0xfBcbC0D214693CF4400841770c856e95cB793F4E",
+    "compilerversion": "0.6.0",
+    "optimizationUsed": "No",
+    "runs": "0",
+    "sourceCode": fs.readFileSync("tests/artifacts/correct.sol").toString(),
+    "contractname": "SimpleToken"
+  };
+  const payload = {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+      "cache-control": "max-age=0",
+      "content-type": "application/json",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "cross-site",
+      "sec-gpc": "1"
+    },
+    "referrerPolicy": "no-referrer",
+    "body": JSON.stringify(body),
+    "method": "POST"
+  }
+  return fetch('http://localhost:8080/verify?network=testnet', payload).then(async (result) => {
+    const json = await result.json();
+    await delay(15000);
+
+    const verified = await fetch('http://localhost:8080/verify?guid=' + json.result)
+    const verifiedJson = await verified.json();
+    // console.log(verifiedJson);
+    expect(verifiedJson.message).toBe("Fail - Unable to verify")
+  });
+});
