@@ -14,8 +14,6 @@ export const getProxyAddress = async (address: string, chainType: string = "main
   const provider = new ethers.providers.JsonRpcProvider(web3URL);
   // /const provider = hmyWeb3.givenProvider;
 
-  console.log(web3URL);
-
   const result = {
     isBeacon: false,
     beaconAddress: "",
@@ -24,20 +22,17 @@ export const getProxyAddress = async (address: string, chainType: string = "main
   }
 
   if (await isBeaconProxy(provider, address)) {
-    console.log("Is Beacon Address");
     result.isBeacon = true;
     result.beaconAddress = await getBeaconAddress(provider, address);
     result.implementationAddress = await getImplementationAddressFromBeacon(provider, result.beaconAddress);
     return result;
   }
   else if (await isTransparentOrUUPSProxy(provider, address)) {
-    console.log("Is Proxy (Transparent / uups)");
     result.isProxy = true;
     result.implementationAddress = await getImplementationAddress(provider, address);
     return result;
   }
   else {
-    console.log("This neither a transparent proxy or a beacon proxy");
     return null;
   }
 }
