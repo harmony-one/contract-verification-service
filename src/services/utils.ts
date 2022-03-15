@@ -7,8 +7,8 @@ export const uuidv4 = () => {
   return [randomBytes(4), randomBytes(4), randomBytes(4), randomBytes(4)].join('-');
 };
 
-export const getProxyAddress = async (address: string): Promise<any | null> => {
-  const web3URL = process.env.REACT_APP_RPC_URL_SHARD0;
+export const getProxyAddress = async (address: string, chainType: string = "mainnet"): Promise<any | null> => {
+  const web3URL = chainType === "mainnet" ? process.env.REACT_APP_RPC_URL_SHARD0 : process.env.REACT_APP_TESTNET_RPC_URL_SHARD0;
 
   // @ts-ignore
   const provider = new ethers.providers.JsonRpcProvider(web3URL);
