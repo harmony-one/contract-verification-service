@@ -99,6 +99,8 @@ export function trimMetadata(bytecode: string): string {
   // find bytecode https://ethereum.stackexchange.com/questions/110991/how-to-verify-smart-contracts-on-different-solidity-versions/111001#111001
   // legacy 0.4.24 or prior (0xa1 0x65 <> 0x00 0x29)
   const legacyMeta = bytecode.indexOf("a165");
+  const currentMeta = bytecode.indexOf("a264");
+  const otherMeta = bytecode.indexOf("a265");
   if (legacyMeta > 0) {
     const last = bytecode.indexOf("0029", legacyMeta);
     if (last > 0) {
@@ -106,12 +108,17 @@ export function trimMetadata(bytecode: string): string {
     }
   }
   // current after 0.4.24 (0xa2 0x64 <> 0x00 0x33)
-  const currentMeta = bytecode.indexOf("a264");
-  if (currentMeta > 0) {
-    
+  else if (currentMeta > 0) { 
     const last = bytecode.indexOf("0033", currentMeta);
     if (last > 0) {
       bytecode = bytecode.replace(bytecode.substring(currentMeta, last + 4), "");
+    }
+  }
+  // current for 0.5.x (0xa2 0x65 <> 0x32) although we should consider the cbor values
+  else if (otherMeta > 0) {
+    const last = bytecode.indexOf("0032", otherMeta);
+    if (last > 0) {
+      bytecode = bytecode.replace(bytecode.substring(otherMeta, last + 4), "");
     }
   }
 

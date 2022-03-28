@@ -38,6 +38,44 @@ test('codeVerification should pass', () => {
   });
 });
 
+test('codeVerification should pass - version 0.5.16', () => {
+  const body = {
+    "chainType": "mainnet",
+    "contractAddress": "0xf01ad95cc471f8edffd67e80e796a934554be28d",
+    "compiler": "0.5.16",
+    "optimizer": "No",
+    "language": 0,
+    "optimizerTimes": "200",
+    "sourceCode": fs.readFileSync("tests/artifacts/contracts/0.5.x/UniswapV2Factory.sol").toString(),
+    "contractName":"UniswapV2Factory"
+  };
+  const payload = {
+      "headers": {
+        "accept": "*/*",
+        "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+        "cache-control": "max-age=0",
+        "content-type": "application/json",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "cross-site",
+        "sec-gpc": "1"
+      },
+      "referrerPolicy": "no-referrer",
+      "body": JSON.stringify(body),
+      "method": "POST"
+    }
+  return fetch('http://localhost:8080/codeVerification', payload).then(async (result) => {
+    const json = await result.json();
+    console.log(json);
+    expect(json.success).toEqual(true);
+    
+    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0xf01ad95cc471f8edffd67e80e796a934554be28d&forced=true')
+    const res = await source.json();
+
+    expect(res.sourceCode === body.sourceCode).toEqual(true);
+  });
+});
+
 test('codeVerification should fail - incorrect bytecode', () => {
   const body = {
     "chainType": "testnet",
@@ -164,8 +202,6 @@ test('codeVerification should fail - incorrect contract name', () => {
       expect(json.message).toEqual("Compiled bytecode do not match with bytecode from blockchain");
     });
   });
-
-
 
   test('codeVerification should fail - incorrect optimizerTimes', () => {
     const body = {
