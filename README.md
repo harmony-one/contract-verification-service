@@ -50,4 +50,7 @@ The following are the parameters that can be configured:
 3. CACHE_MAX_KEYS - the max number of keys that are kept in memory before cache additions begin to be reject (default -1, unlimited keys). Set this value to reduce memory usage  
 4. CACHE_MISSED_TTL - the duration of time that a missed cache item (e.g. database returns null) is cached (default 300 seconds). 
 
-Cache - miss (where the contract source code retrieval returns null) are cached in-memory for 5 minutes. When a contract verification is performed and is successfuly, the cache is updated with the verified contract details
+Cache - miss (where the contract source code retrieval returns null) are cached in-memory for 5 minutes. When a contract verification is performed and is successfuly, the cache is updated with the verified contract details. This allows the system to cache null values on repeated queries (most contracts are not verified) while still clearing these cache values in the case where the contract verification has occurred.  
+
+Note: Cache are flushed on reset, there is no persistence.
+
