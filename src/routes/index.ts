@@ -195,7 +195,6 @@ export const routes = (app, services: IServices) => {
         result.supporting = fileObj.result;
         try {
           const proxy = await getProxyAddress(contractAddress, req.query.chainType);
-          console.log("PROXY is", proxy, contractAddress);
           result.proxyAddress = proxy?.implementationAddress;
           result.proxyDetails = proxy;
           if (proxy && proxy?.implementationAddress !== "") {
