@@ -121,7 +121,7 @@ export const routes = (app, services: IServices) => {
           optimizer = config.settings.optimizer.enabled;
           optimizerTimes = config.settings.optimizer.runs;
           settings = JSON.stringify(config.settings);
-          
+
         }
         catch (e) {
           // do nothing;
@@ -146,7 +146,7 @@ export const routes = (app, services: IServices) => {
         // return this.message.startsWith("Unable to locate ContractCode at");
 
         // return result
-        
+
         // finish services - consider moving this to a different service if we want
         // async + polling (as with etherscan)
         await services.database.addContractVerificationStatus({
@@ -160,10 +160,10 @@ export const routes = (app, services: IServices) => {
         const verified = await codeVerication(data);
 
         await services.database.updateContractVerificationStatus({
-            data,
-            guid,
-            result: verified
-          });
+          data,
+          guid,
+          result: verified
+        });
       }
       catch (e) {
         console.log("Error processing contract", e);
@@ -187,18 +187,19 @@ export const routes = (app, services: IServices) => {
         req.query.contractAddress
       ).checksum.toLowerCase();
 
-      const result = await services.database.getContractCode(contractAddress);
+      const data = await services.database.getContractCode(contractAddress, req.query.forced === "true");
+      const result = { ...data.result, cached: data.cached };
 
-      if (result) {
-        const fileObj = await services.database.getContractSupportingFiles(contractAddress);
-        result.supporting = fileObj;
+      if (data.result) {
+        const fileObj = await services.database.getContractSupportingFiles(contractAddress, req.query.forced === "true");
+        result.supporting = fileObj.result;
         try {
           const proxy = await getProxyAddress(contractAddress, req.query.chainType);
           console.log("PROXY is", proxy, contractAddress);
           result.proxyAddress = proxy?.implementationAddress;
           result.proxyDetails = proxy;
           if (proxy && proxy?.implementationAddress !== "") {
-            result.proxy = await services.database.getContractCode(proxy?.implementationAddress.toLocaleLowerCase());
+            result.proxy = await services.database.getContractCode(proxy?.implementationAddress.toLocaleLowerCase(), req.query.forced === "true");
           }
         }
         catch (e) {
@@ -207,7 +208,7 @@ export const routes = (app, services: IServices) => {
         }
       }
 
-      if (!result) {
+      if (!data.result) {
         res.status(400).send({ message: "contract not found" });
         return;
       }

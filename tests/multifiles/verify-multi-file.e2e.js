@@ -34,7 +34,7 @@ test('codeVerification - multifile should pass', () => {
     console.log(json);
     expect(json.success).toEqual(true);
 
-    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0xfBcbC0D214693CF4400841770c856e95cB793F4E')
+    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0xfBcbC0D214693CF4400841770c856e95cB793F4E&forced=true')
     const res = await source.json();
 
     expect(res.sourceCode === body.sourceCode).toEqual(true);
