@@ -32,7 +32,7 @@ const verifyBox = async (address, box) => {
   console.log(json);
   expect(json.success).toEqual(true);
 
-  const source = await fetch('http://localhost:8080/fetchContractCode?chainType=testnet&&contractAddress=' + address)
+  const source = await fetch('http://localhost:8080/fetchContractCode?chainType=testnet&forced=true&contractAddress=' + address)
   const res = await source.json();
 
   expect(res.sourceCode === body.sourceCode).toEqual(true);
@@ -72,7 +72,7 @@ test('codeVerification - transparent proxies', () => {
 
     await verifyBox("0x4311Eb946d8818dBb8154D07c398626a7816f283", "Box.sol");
 
-    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0x2580148A83B8Cd0122CD5EEa96aED3bBC8db3bD3&chainType=testnet')
+    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0x2580148A83B8Cd0122CD5EEa96aED3bBC8db3bD3&chainType=testnet&forced=true')
     const res = await source.json();
     expect(json.success).toEqual(true);
     expect(res.sourceCode === body.sourceCode).toEqual(true);
@@ -116,7 +116,7 @@ test('codeVerification - uups proxies', () => {
 
     await verifyBox("0x699f3bC53f64BD8F256C86A120385900df0F15a3", "BoxUUPS.sol");
 
-    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0xDA98CFb6EFC87ed2Fa87f58a93D2C253356A23dd&chainType=testnet')
+    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0xDA98CFb6EFC87ed2Fa87f58a93D2C253356A23dd&chainType=testnet&forced=true')
     const res = await source.json();
     expect(json.success).toEqual(true);
     expect(res.sourceCode === body.sourceCode).toEqual(true);
@@ -160,7 +160,7 @@ test('codeVerification - beacon proxies', () => {
 
     await verifyBox("0x98e1487b438823d3E37B0850f0f1B63a03Bc8996", "BoxBeacon.sol");
 
-    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0xa7c46009a624492ED185A1B4e01DeE5DDd0A6D39&chainType=testnet')
+    const source = await fetch('http://localhost:8080/fetchContractCode?contractAddress=0xa7c46009a624492ED185A1B4e01DeE5DDd0A6D39&chainType=testnet&forced=true')
     const res = await source.json();
     expect(json.success).toEqual(true);
     expect(res.sourceCode === body.sourceCode).toEqual(true);

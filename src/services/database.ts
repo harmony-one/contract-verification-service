@@ -1,4 +1,17 @@
 import admin from 'firebase-admin';
+import NodeCache from "node-cache";
+
+// cache for contract source code
+// stdTTL - time that cache is kept alive before flush (default 1 day)
+// checkperiod - time that cache removal is applied
+// maxKeys - max number of keys stored in cache
+const contractCache = new NodeCache({
+  stdTTL: +process.env.CACHE_STD_TTL || 86400,
+  checkperiod: +process.env.CACHE_CHECK_PERIOD || 600,
+  maxKeys: +process.env.CACHE_MAX_KEYS || -1
+});
+
+const missedCacheTTL = +process.env.CACHE_MISSED_TTL || 300
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -70,14 +83,37 @@ export class DBService {
     }
   };
 
-  public async getContractCode(contractAddress): Promise<any> {
-    const data = await this.smartContracts.doc(contractAddress).get();
-    return data.data();
+  private async getAndCache(contractAddress, key, forced, collection, throws: boolean = true) {
+    if (contractCache.has(key) && !forced) { // what if its null?
+      const data = contractCache.get<any>(key).result;
+
+      if (!data && throws) {
+        throw new Error("Not found");
+      }
+      return {
+        result: data, cached: {
+          ttl: contractCache.getTtl(key),
+          cached: true,
+        }
+      };
+    }
+    try {
+      const data = await collection.doc(contractAddress).get();
+      contractCache.set(key, { result: data.data() });
+      return { result: data.data() };
+    } catch (err) {
+      // cache miss, store this with a 5 minute ttl
+      contractCache.set(key, { result: null }, missedCacheTTL);
+      throw err;
+    }
   }
 
-  public async getContractSupportingFiles(contractAddress): Promise<any> {
-    const data = await this.smartContractFiles.doc(contractAddress).get();
-    return data.data();
+  public async getContractCode(contractAddress, forced: boolean): Promise<any> {
+    return await this.getAndCache(contractAddress, contractAddress, forced, this.smartContracts);
+  }
+
+  public async getContractSupportingFiles(contractAddress, forced: boolean): Promise<any> {
+    return await this.getAndCache(contractAddress, contractAddress + ".supporting", forced, this.smartContractFiles, false);
   }
 
   public async getContractVerificationStatus(guid): Promise<any> {
@@ -118,7 +154,7 @@ export class DBService {
     libraries,
     abi,
   }): Promise<void> {
-    await this.smartContracts.doc(contractAddress).set({
+    const doc = {
       contractAddress,
       sourceCode,
       compiler,
@@ -126,7 +162,9 @@ export class DBService {
       libraries,
       constructorArguments,
       abi,
-    });
+    };
+    await this.smartContracts.doc(contractAddress).set(doc);
+    contractCache.set(contractAddress, { result: doc });
   }
 
   public async addContractSupportingFiles({
@@ -136,6 +174,7 @@ export class DBService {
     await this.smartContractFiles.doc(contractAddress).set({
       sources
     })
+    contractCache.set(contractAddress + ".supporting", { result: sources });
   }
 }
 
