@@ -215,7 +215,7 @@ test('codeVerification etherscan api with large files', () => {
     const verified = await fetch('http://localhost:8080/verify?guid=' + json.result)
     const verifiedJson = await verified.json();
     console.log(verifiedJson);
-    expect(verifiedJson.status).toEqual(0); // should fail
+    expect(verifiedJson.status).toEqual(1); 
   });
 });
 
