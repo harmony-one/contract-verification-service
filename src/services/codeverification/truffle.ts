@@ -198,8 +198,9 @@ function extractFromSourcesObject(sourceCode) {
       else {
         filename = source.substring(source.lastIndexOf("/") + 1);
       }
-      files[filename] = {
+      files[source] = {
         name: filename,
+        fullpath: source,
         source: sources[source].content,
         mv: (name) => {
           try {
@@ -254,11 +255,22 @@ export default async ({
   if (files) { // files object exists
     await Promise.all(Object.keys(files).map(async e => {
       try {
-        await files[e].mv(path.join(
-          path.resolve(__dirname, contractAddress),
-          "contracts",
-          files[e].name,
-        ));
+        const dirNames = e.substring(0, e.lastIndexOf("/"));
+        let dirPath;
+        
+        if (e.startsWith("contract")) {
+          dirPath = path.join(path.resolve(__dirname, contractAddress), dirNames);
+        }
+        else if (dirNames.length === 0) {
+          dirPath = path.join(path.resolve(__dirname, contractAddress), "contracts");
+        }
+        else {
+          dirPath = path.join(path.resolve(__dirname, contractAddress), "node_modules", dirNames);
+        }
+        if (!fs.existsSync(dirPath)) {
+          fs.mkdirSync(dirPath, { recursive: true });
+        }
+        await files[e].mv(path.join(dirPath, files[e].name));
         files[e].mv = null;
         if (!files[e].source) {
           files[files[e].name] = {
@@ -281,19 +293,6 @@ export default async ({
       }
       Promise.resolve(files[e]);
     }));
-
-    /// if libraries are provided, maybe they included openzepelin, in that case we don't include
-    /// any imports with @ in the name
-    const options = {
-      files: [
-        //'./' + contractAddress + '/contracts/*.sol'
-        path.resolve(__dirname, "./" + contractAddress + '/contracts/*.sol')
-      ],
-      from: libraries && libraries?.length > 0 ? /import \"[.|\/|\w|-]+\//g : /import \"[@|.|\/|\w|-]+\//g,
-      to: 'import "./'
-    }
-
-    replace.sync(options);
   }
   else if (!language) {
     createSolFileFromSource({

@@ -20,7 +20,7 @@ const startServer = async () => {
   });
 
   app.use(bodyParser.json({ limit: '1mb' })); // to support JSON-encoded bodies
-  app.use(bodyParser.urlencoded())
+  app.use(bodyParser.urlencoded({ limit: '1mb' }))
 
   app.use(fileUpload({
     useTempFiles: true,
