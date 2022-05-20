@@ -257,8 +257,6 @@ export default async ({
       try {
         const dirNames = e.substring(0, e.lastIndexOf("/"));
         let dirPath;
-
-        console.log(e, dirNames);
         
         if (e.startsWith("contract")) {
           dirPath = path.join(path.resolve(__dirname, contractAddress), dirNames);
@@ -295,19 +293,6 @@ export default async ({
       }
       Promise.resolve(files[e]);
     }));
-
-    /// if libraries are provided, maybe they included openzepelin, in that case we don't include
-    /// any imports with @ in the name
-    // const options = {
-    //   files: [
-    //     //'./' + contractAddress + '/contracts/*.sol'
-    //     path.resolve(__dirname, "./" + contractAddress + '/contracts/*.sol')
-    //   ],
-    //   from: libraries && libraries?.length > 0 ? /import \"[.|\/|\w|-]+\//g : /import \"[@|.|\/|\w|-]+\//g,
-    //   to: 'import "./'
-    // }
-
-    // replace.sync(options);
   }
   else if (!language) {
     createSolFileFromSource({
