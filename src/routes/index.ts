@@ -27,6 +27,7 @@ export const routes = (app, services: IServices) => {
         contractName,
         chainType,
         language,
+        shard
       } = req.body;
 
       const verified = await codeVerication({
@@ -41,6 +42,7 @@ export const routes = (app, services: IServices) => {
         contractName,
         chainType,
         language: +language,
+        shard
       });
 
       res.status(200).send({ success: verified });
@@ -91,8 +93,6 @@ export const routes = (app, services: IServices) => {
       const guid = uuidv4();
       let responseSent = false;
 
-      console.log(req.query);
-
       try {
         const body = req.body;
         // mapping from harmony to etherscan
@@ -136,7 +136,8 @@ export const routes = (app, services: IServices) => {
           optimizerTimes: optimizerTimes,                            //set to 200 as default unless otherwise  (applicable when codeformat=solidity-single-file)        
           constructorArguments: body.constructorArguements,     //if applicable
           chainType: req.query?.network || "mainnet",
-          settings
+          settings,
+          shard: +(req.query?.shard || 0),
         }
 
         // status of etherscan api has following:
@@ -194,7 +195,7 @@ export const routes = (app, services: IServices) => {
         const fileObj = await services.database.getContractSupportingFiles(contractAddress, req.query.forced === "true");
         result.supporting = fileObj.result;
         try {
-          const proxy = await getProxyAddress(contractAddress, req.query.chainType);
+          const proxy = await getProxyAddress(contractAddress, req.query.chainType, req.query.shard || 0);
           result.proxyAddress = proxy?.implementationAddress;
           result.proxyDetails = proxy;
           if (proxy && proxy?.implementationAddress !== "") {
