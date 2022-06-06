@@ -33,6 +33,7 @@ type inputs = {
   chainType: string;
   language: number;
   files: object;
+  shard: number;
 };
 
 const codeVerification = async ({
@@ -47,6 +48,7 @@ const codeVerification = async ({
   contractName,
   chainType = "mainnet",
   language,
+  shard = 0,
 }: inputs): Promise<boolean> => {
   if (!compiler) {
     throw new Error("Wrong Compiler");
@@ -71,7 +73,8 @@ const codeVerification = async ({
     const chainData = await getSmartContractCode(
       chainType,
       contractAddress,
-      compiler
+      compiler,
+      shard
     );
 
     if (!chainData.bytecode) {

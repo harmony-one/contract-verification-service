@@ -27,6 +27,7 @@ export const routes = (app, services: IServices) => {
         contractName,
         chainType,
         language,
+        shard
       } = req.body;
 
       const verified = await codeVerication({
@@ -41,6 +42,7 @@ export const routes = (app, services: IServices) => {
         contractName,
         chainType,
         language: +language,
+        shard
       });
 
       res.status(200).send({ success: verified });
@@ -194,7 +196,7 @@ export const routes = (app, services: IServices) => {
         const fileObj = await services.database.getContractSupportingFiles(contractAddress, req.query.forced === "true");
         result.supporting = fileObj.result;
         try {
-          const proxy = await getProxyAddress(contractAddress, req.query.chainType);
+          const proxy = await getProxyAddress(contractAddress, req.query.chainType, req.query.shard || 0);
           result.proxyAddress = proxy?.implementationAddress;
           result.proxyDetails = proxy;
           if (proxy && proxy?.implementationAddress !== "") {
