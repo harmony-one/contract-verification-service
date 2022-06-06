@@ -93,8 +93,6 @@ export const routes = (app, services: IServices) => {
       const guid = uuidv4();
       let responseSent = false;
 
-      console.log(req.query);
-
       try {
         const body = req.body;
         // mapping from harmony to etherscan
@@ -138,7 +136,8 @@ export const routes = (app, services: IServices) => {
           optimizerTimes: optimizerTimes,                            //set to 200 as default unless otherwise  (applicable when codeformat=solidity-single-file)        
           constructorArguments: body.constructorArguements,     //if applicable
           chainType: req.query?.network || "mainnet",
-          settings
+          settings,
+          shard: +(req.query?.shard || 0),
         }
 
         // status of etherscan api has following:
