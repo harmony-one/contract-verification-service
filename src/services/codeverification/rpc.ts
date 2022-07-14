@@ -1,19 +1,49 @@
 import axios from 'axios';
 import logger from '../../logger';
+
 const log = logger.module('verification:rpc');
 
-export const getSmartContractCode = async (
-  chain,
-  address,
-  compiler,
-  shard = 0,
-): Promise<{ bytecode: string; creationData: string }> => {
-  const explorerUrl =
-    chain === 'mainnet' ? process.env.EXPLORER_API_MAINNET : process.env.EXPLORER_API_TESTNET;
+function getExplorerUrl(chain: string, shard?: string): string {
+  if (chain === 'mainnet') {
+    return process.env.EXPLORER_API_MAINNET;
+  }
+  if (chain === 'testnet') {
+    return process.env.EXPLORER_API_TESTNET;
+  }
+  if (+shard === 0) {
+    return process.env.REACT_APP_DEVNET_RPC_URL_SHARD0;
+  }
+
+  return process.env.REACT_APP_DEVNET_RPC_URL_SHARD1;
+}
+
+async function getDataFromWS({ chain, address, shard }) {
+  const body = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: "hmy_getCode",
+    params: [address, "latest"]
+  };
+
+  const result: any = await axios.post(getExplorerUrl(chain, shard), body);
+
+  return {
+    bytecode: result.data.result,
+    creationData: "",
+  }
+}
+
+async function getContractCode({ chain, address, shard, compiler }): Promise<{ bytecode: string; creationData: string }> {
+
+  if (chain === 'devnet') {
+    return await getDataFromWS({ chain, address, shard });
+  }
+  const explorerUrl = getExplorerUrl(chain);
 
   let bytecode, creationData, solidityVersion;
 
   try {
+    // 
     const contract: any = await axios.get(`${explorerUrl}/shard/${shard}/address/${address}/contract`);
 
     bytecode = contract.data.bytecode;
@@ -35,4 +65,13 @@ export const getSmartContractCode = async (
   }
 
   return { bytecode, creationData };
+}
+
+export const getSmartContractCode = async (
+  chain,
+  address,
+  compiler,
+  shard = 0,
+): Promise<{ bytecode: string; creationData: string }> => {
+  return getContractCode({ chain, address, compiler, shard })
 };

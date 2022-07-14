@@ -10,12 +10,28 @@ const SHARDS = {
   3: process.env.REACT_APP_RPC_URL_SHARD3,
 }
 
+const DEVNET_SHARDS = {
+  0: process.env.REACT_APP_DEVNET_RPC_URL_SHARD0,
+  1: process.env.REACT_APP_DEVNET_RPC_URL_SHARD1,
+}
+
+function getWeb3URL({chainType, shard}): string {
+  if (chainType === "mainnet") {
+    return SHARDS[shard];
+  }
+  if (chainType === "testnet") {
+    return process.env.REACT_APP_TESTNET_RPC_URL_SHARD0;
+  }
+
+  return DEVNET_SHARDS[shard]
+}
+
 export const uuidv4 = () => {
   return [randomBytes(4), randomBytes(4), randomBytes(4), randomBytes(4)].join('-');
 };
 
 export const getProxyAddress = async (address: string, chainType: string = "mainnet", shard: number = 0): Promise<any | null> => {
-  const web3URL = chainType === "mainnet" ? SHARDS[shard] : process.env.REACT_APP_TESTNET_RPC_URL_SHARD0;
+  const web3URL = getWeb3URL({ chainType, shard })
 
   // @ts-ignore
   const provider = new ethers.providers.JsonRpcProvider(web3URL);
