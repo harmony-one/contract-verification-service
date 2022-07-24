@@ -4,16 +4,17 @@ export function verifyByteCode(
   chainData: { bytecode: string; creationData: string },
   recompiled: { deployedBytecode: string; bytecode: string },
   constructorArguments: string,
+  contractAddress: string,
   solidityVersion,
-  language = 0
+  language = 0,
 ) {
   try {
     if (chainData.bytecode === recompiled.deployedBytecode) {
       return true;
     }
 
-    const trimmedDeployedBytecode = language === 0 ? trimMetadata(chainData.bytecode) : chainData.bytecode;
-    const trimmedCompiledRuntimeBytecode = language === 0 ? trimMetadata(recompiled.deployedBytecode) : recompiled.deployedBytecode;
+    const trimmedDeployedBytecode = language === 0 ? trimMetadata(chainData.bytecode, contractAddress) : chainData.bytecode;
+    const trimmedCompiledRuntimeBytecode = language === 0 ? trimMetadata(recompiled.deployedBytecode, contractAddress) : recompiled.deployedBytecode;
 
     if (trimmedDeployedBytecode === trimmedCompiledRuntimeBytecode) {
       // partial
@@ -30,7 +31,7 @@ export function verifyByteCode(
           return true;
         }
 
-        if (language === 0 && trimMetadata(recompiled.bytecode) === trimMetadata(clearChainByteCode)) {
+        if (language === 0 && trimMetadata(recompiled.bytecode, contractAddress) === trimMetadata(clearChainByteCode, contractAddress)) {
           // partial
           return true;
         }
@@ -87,7 +88,7 @@ export function splitByteCodeLegacy(providedByteCode, solidityVersion) {
   }
 }
 
-export function trimMetadata(bytecode: string): string {
+export function trimMetadata(bytecode: string, contractAddress: string): string {
   // Last 4 chars of bytecode specify byte size of metadata component,
   // console.log('pfff: ', bytecode.slice(-4), parseInt(bytecode.slice(-4), 16) * 2 + 4);
   const metadataSize = parseInt(bytecode.slice(-4), 16) * 2 + 4;
@@ -120,6 +121,11 @@ export function trimMetadata(bytecode: string): string {
     if (last > 0) {
       bytecode = bytecode.replace(bytecode.substring(otherMeta, last + 4), "");
     }
+  }
+
+  if (bytecode.indexOf(contractAddress.replace('0x', ''))) {
+    const addr = contractAddress.replace('0x', '')
+    bytecode = bytecode.replaceAll(addr, new Array(addr.length + 1).join('0'))
   }
 
   return bytecode;

@@ -111,8 +111,9 @@ const codeVerification = async ({
       chainData,
       compiledData,
       constructorArguments,
+      contractAddress,
       compiler,
-      language
+      language,
     );
 
     console.log("Verified: ", verified);
