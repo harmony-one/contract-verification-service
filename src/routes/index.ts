@@ -106,7 +106,7 @@ export const routes = (app, services: IServices) => {
 
         let contractName = body.contractname;
 
-        if (contractName.indexOf(":") >= 0) {
+        if (contractName?.indexOf(":") >= 0) {
           contractName = contractName.substring(contractName.indexOf(":") + 1);
         }
 
