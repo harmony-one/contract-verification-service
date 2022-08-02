@@ -4,6 +4,8 @@ RUN apt-get update && \
 apt-get install -y build-essential
 
 RUN curl -fsSL https://rpm.nodesource.com/setup_14.x | bash -
+RUN apt-get update
+
 RUN apt-get install -y nodejs
 RUN apt-get install -y npm 
 RUN node --version 
