@@ -51,14 +51,18 @@ async function getContractCode({ chain, address, shard, compiler }): Promise<{ b
   const explorerUrl = getExplorerUrl(chain);
 
   let bytecode, creationData, solidityVersion;
+  let config:any = {};
 
   try {
     // 
-    const config = {
-      headers: {
-        'rest_api_key': getExplorerApiKey(chain, shard)
+    let accessKey = getExplorerApiKey(chain, shard);
+
+    if (accessKey && accessKey.length > 0) {
+     config.headers = {
+        'rest_api_key': accessKey
       }
     }
+    
     const contract: any = await axios.get(`${explorerUrl}/shard/${shard}/address/${address}/contract`, config);
 
     bytecode = contract.data.bytecode;
@@ -66,13 +70,13 @@ async function getContractCode({ chain, address, shard, compiler }): Promise<{ b
     solidityVersion = contract.data.solidityVersion;
 
     const tx: any = await axios.get(
-      `${explorerUrl}/shard/${shard}/transaction/hash/${contract.data.transactionHash}`
+      `${explorerUrl}/shard/${shard}/transaction/hash/${contract.data.transactionHash}`, config
     );
 
     creationData = tx.data.input;
   } catch (e) {
     log.error('Error to fetch contract bytecode', { error: e });
-    throw new Error('Contract not found');
+    throw new Error('Contract not found, ' + e.message + ' ' + `${explorerUrl}/shard/${shard}/address/${address}/contract` + ' ' + config.headers?.rest_api_key);
   }
 
   if (solidityVersion !== compiler) {
