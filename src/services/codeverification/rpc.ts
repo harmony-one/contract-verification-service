@@ -17,6 +17,16 @@ function getExplorerUrl(chain: string, shard?: string): string {
   return process.env.REACT_APP_DEVNET_RPC_URL_SHARD1;
 }
 
+function getExplorerApiKey(chain: string, shard?: string): string {
+  if (chain === 'mainnet') {
+    return process.env[`EXPLORER_API_KEY_MAINNET_${shard || '0'}`];
+  }
+  if (chain === 'testnet') {
+    return process.env.EXPLORER_API_KEY_TESTNET;
+  }
+  
+}
+
 async function getDataFromWS({ chain, address, shard }) {
   const body = {
     jsonrpc: '2.0',
@@ -44,7 +54,12 @@ async function getContractCode({ chain, address, shard, compiler }): Promise<{ b
 
   try {
     // 
-    const contract: any = await axios.get(`${explorerUrl}/shard/${shard}/address/${address}/contract`);
+    const config = {
+      headers: {
+        'rest_api_key': getExplorerApiKey(chain, shard)
+      }
+    }
+    const contract: any = await axios.get(`${explorerUrl}/shard/${shard}/address/${address}/contract`, config);
 
     bytecode = contract.data.bytecode;
 
