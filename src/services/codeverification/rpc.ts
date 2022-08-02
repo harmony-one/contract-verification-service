@@ -17,6 +17,16 @@ function getExplorerUrl(chain: string, shard?: string): string {
   return process.env.REACT_APP_DEVNET_RPC_URL_SHARD1;
 }
 
+function getExplorerApiKey(chain: string, shard?: string): string {
+  if (chain === 'mainnet') {
+    return process.env[`EXPLORER_API_KEY_MAINNET_${shard || '0'}`];
+  }
+  if (chain === 'testnet') {
+    return process.env.EXPLORER_API_KEY_TESTNET;
+  }
+  
+}
+
 async function getDataFromWS({ chain, address, shard }) {
   const body = {
     jsonrpc: '2.0',
@@ -41,23 +51,32 @@ async function getContractCode({ chain, address, shard, compiler }): Promise<{ b
   const explorerUrl = getExplorerUrl(chain);
 
   let bytecode, creationData, solidityVersion;
+  let config:any = {};
 
   try {
     // 
-    const contract: any = await axios.get(`${explorerUrl}/shard/${shard}/address/${address}/contract`);
+    let accessKey = getExplorerApiKey(chain, shard);
+
+    if (accessKey && accessKey.length > 0) {
+     config.headers = {
+        'rest_api_key': accessKey
+      }
+    }
+    
+    const contract: any = await axios.get(`${explorerUrl}/shard/${shard}/address/${address}/contract`, config);
 
     bytecode = contract.data.bytecode;
 
     solidityVersion = contract.data.solidityVersion;
 
     const tx: any = await axios.get(
-      `${explorerUrl}/shard/${shard}/transaction/hash/${contract.data.transactionHash}`
+      `${explorerUrl}/shard/${shard}/transaction/hash/${contract.data.transactionHash}`, config
     );
 
     creationData = tx.data.input;
   } catch (e) {
     log.error('Error to fetch contract bytecode', { error: e });
-    throw new Error('Contract not found');
+    throw new Error('Contract not found, ' + e.message + ' ' + `${explorerUrl}/shard/${shard}/address/${address}/contract` + ' ' + config.headers?.rest_api_key);
   }
 
   if (solidityVersion !== compiler) {

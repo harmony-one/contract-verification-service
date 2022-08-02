@@ -49,6 +49,7 @@ export function verifyByteCode(
 
     // return Buffer.compare(compiled, deployed) === 0;
   } catch (e) {
+    console.error(e)
     throw 'Verify Error. Invalid bytecode';
   }
 }
@@ -125,7 +126,7 @@ export function trimMetadata(bytecode: string, contractAddress: string): string 
 
   if (bytecode.indexOf(contractAddress.replace('0x', ''))) {
     const addr = contractAddress.replace('0x', '')
-    bytecode = bytecode.replaceAll(addr, new Array(addr.length + 1).join('0'))
+    bytecode = bytecode.replace(new RegExp(addr, 'g'), new Array(addr.length + 1).join('0'))
   }
 
   return bytecode;
