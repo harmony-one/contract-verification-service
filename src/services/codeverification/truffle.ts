@@ -140,14 +140,14 @@ const createVyFileFromSource = ({
 export const installDependencies = ({ libraries, contractAddress }) => {
   if (libraries?.length > 0) {
     const dependencies = libraries.toString().replace(/\,/g, " ");
-    console.log(dependencies);
+    console.log('Dependencies: ', dependencies);
 
     try {
       execSync(
         `pwd && cd ${path.resolve(
           __dirname,
           contractAddress
-        )} && npm install ${dependencies}`
+        )} && npm init -y && npm install ${dependencies}`
       );
     } catch (e) {
       throw "Dependency issue";
@@ -257,7 +257,7 @@ export default async ({
       try {
         const dirNames = e.substring(0, e.lastIndexOf("/"));
         let dirPath;
-        
+
         if (e.startsWith("contract")) {
           dirPath = path.join(path.resolve(__dirname, contractAddress), dirNames);
         }
