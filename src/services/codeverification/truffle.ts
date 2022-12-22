@@ -94,14 +94,12 @@ const createSolFileFromSource = ({
       sourceCode
     );
 
-    fs.unlinkSync(
-      path.join(
-        path.resolve(__dirname, contractAddress),
-        "contracts",
-        "Migrations.sol"
-      )
-    );
+    const migrationsPath = path.join(path.resolve(__dirname, contractAddress), "contracts", "Migrations.sol")
+    if(fs.existsSync(migrationsPath)) {
+      fs.unlinkSync(migrationsPath);
+    }
   } catch (e) {
+    console.log('createSolFileFromSource error:', e)
     throw "Couldn't create sol files";
   }
 };

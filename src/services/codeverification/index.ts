@@ -69,7 +69,7 @@ const codeVerification = async ({
   ).checksum.toLowerCase();
 
   try {
-    console.log("fetching actual bytecode from blockchain");
+    console.log("Fetching actual bytecode from blockchain, contract address:", contractAddress, ', shard:', shard);
     const chainData = await getSmartContractCode(
       chainType,
       contractAddress,
